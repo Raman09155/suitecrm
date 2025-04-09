@@ -1,0 +1,81 @@
+<?php //app-metadata-module-metadata-home-
+
+return [PHP_INT_MAX, [
+    'search' => [
+        'layout' => [
+            'advanced' => [],
+            'basic' => [],
+        ],
+    ],
+    'mass_update' => [
+        'fields' => [],
+    ],
+    'listview' => [
+        'columns' => [],
+        'bulkActions' => [],
+        'lineActions' => [],
+        'tableActions' => [
+            [
+                'key' => 'select-columns',
+                'icon' => 'column_chooser',
+                'titleKey' => 'LBL_COLUMNS',
+                'params' => [
+                    'expanded' => true,
+                ],
+                'modes' => [
+                    'list',
+                ],
+                'klass' => [
+                    'column-chooser-button',
+                ],
+            ],
+        ],
+        'availableFilters' => [],
+        'sidebarWidgets' => [],
+        'paginationType' => null,
+        'maxHeight' => null,
+    ],
+    'subpanel' => [],
+    'recordview' => [
+        'templateMeta' => [
+            'maxColumns' => 2,
+            'useTabs' => true,
+            'tabDefs' => [],
+        ],
+        'topWidget' => [
+            'refreshOn' => 'data-update',
+        ],
+        'sidebarWidgets' => [],
+        'bottomWidgets' => [],
+        'actions' => [
+            [
+                'key' => 'cancel',
+                'labelKey' => 'LBL_CANCEL',
+                'params' => [
+                    'expanded' => true,
+                ],
+                'modes' => [
+                    'edit',
+                ],
+            ],
+            [
+                'key' => 'cancelCreate',
+                'labelKey' => 'LBL_CANCEL',
+                'params' => [
+                    'expanded' => true,
+                ],
+                'modes' => [
+                    'create',
+                ],
+            ],
+        ],
+        'panels' => [],
+        'summaryTemplates' => [
+            'create' => 'LBL_CREATE',
+            'edit' => 'LBL_SUMMARY_DEFAULT',
+            'detail' => 'LBL_SUMMARY_DEFAULT',
+        ],
+        'vardefs' => [],
+        'metadata' => [],
+    ],
+]];
