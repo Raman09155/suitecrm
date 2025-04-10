@@ -1,9 +1,10 @@
+# Use official PHP with Apache image
 FROM php:8.1-apache
 
 # Enable Apache rewrite module
 RUN a2enmod rewrite
 
-# Install required system and PHP dependencies
+# Install system dependencies and PHP extensions
 RUN apt-get update && apt-get install -y \
     unzip \
     git \
@@ -19,30 +20,25 @@ RUN apt-get update && apt-get install -y \
     libssl-dev \
     libmcrypt-dev \
     libcurl4-openssl-dev \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install intl pdo pdo_mysql zip gd soap
+    libldap2-dev \
+    && docker-php-ext-install intl pdo pdo_mysql zip gd soap ldap
 
-# Install Composer
+# Install Composer from the Composer image
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Set working directory
 WORKDIR /var/www/html
 
-# Copy all application files
-COPY . .
+# Copy application code to container
+COPY . /var/www/html
 
 # Install PHP dependencies via Composer
-RUN composer install --no-dev --optimize-autoloader
+RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist --ignore-platform-reqs
 
-# Adjust Apache config to serve from SuiteCRM 8's public folder
-RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|' /etc/apache2/sites-available/000-default.conf
 
-# Fix permissions (optional but recommended)
+# Set permissions (optional but recommended)
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html
 
-# Expose default HTTP port
+# Expose Apache port
 EXPOSE 80
-
-# Start Apache server
-CMD ["apache2-foreground"]
