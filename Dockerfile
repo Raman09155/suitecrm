@@ -1,37 +1,38 @@
-# Use PHP 8.1 with Apache
 FROM php:8.1-apache
-
-# Install required packages and extensions
-RUN apt-get update && apt-get install -y \
-    unzip \
-    libpng-dev \
-    libjpeg-dev \
-    libfreetype6-dev \
-    libonig-dev \
-    libxml2-dev \
-    zip \
-    curl \
-    libzip-dev \
-    libicu-dev \
-    libcurl4-openssl-dev \
-    libssl-dev \
-    libmariadb-dev \
-    libmagickwand-dev --no-install-recommends
-
-# Enable PHP extensions
-RUN docker-php-ext-install pdo pdo_mysql zip intl gd soap mysqli opcache
 
 # Enable Apache rewrite module
 RUN a2enmod rewrite
 
+# Install dependencies
+RUN apt-get update && apt-get install -y \
+    unzip \
+    git \
+    curl \
+    zip \
+    libicu-dev \
+    libxml2-dev \
+    libzip-dev \
+    libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    libonig-dev \
+    libssl-dev \
+    libmcrypt-dev \
+    libcurl4-openssl-dev \
+    && docker-php-ext-install intl pdo pdo_mysql zip gd soap
+
+# Install Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Copy app code
+COPY . /var/www/html
+
 # Set working directory
 WORKDIR /var/www/html
 
-# Copy all project files into the container
-COPY ./public /var/www/html/
+# Install dependencies via Composer
+RUN composer install --no-dev --optimize-autoloader
 
-# Set permissions for Apache
-RUN chown -R www-data:www-data /var/www/html && chmod -R 755 /var/www/html
-
-# Expose web server port
-EXPOSE 80
+# Permissions (optional, but useful)
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html
