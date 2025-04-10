@@ -1,10 +1,9 @@
-# Use official PHP with Apache image
 FROM php:8.1-apache
 
 # Enable Apache rewrite module
 RUN a2enmod rewrite
 
-# Install system dependencies and PHP extensions
+# Install PHP and system dependencies
 RUN apt-get update && apt-get install -y \
     unzip \
     git \
@@ -23,23 +22,26 @@ RUN apt-get update && apt-get install -y \
     libldap2-dev \
     && docker-php-ext-install intl pdo pdo_mysql zip gd soap ldap
 
-# Install Composer from the Composer image
+# Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Set working directory
 WORKDIR /var/www/html
 
-# Copy application code to container
-COPY . /var/www/html
+# Copy project files
+COPY . .
 
-# Install PHP dependencies via Composer
-RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist --no-scripts --ignore-platform-reqs
+# Update Apache to use public folder as root
+RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|' /etc/apache2/sites-available/000-default.conf
 
+# Optional but recommended permissions
+RUN chown -R www-data:www-data /var/www/html && chmod -R 755 /var/www/html
 
+# Install PHP dependencies with Composer
+RUN composer install --no-dev --optimize-autoloader --no-scripts --ignore-platform-reqs
 
-# Set permissions (optional but recommended)
-RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html
-
-# Expose Apache port
+# Expose HTTP port
 EXPOSE 80
+
+# Start Apache server
+CMD ["apache2-foreground"]
