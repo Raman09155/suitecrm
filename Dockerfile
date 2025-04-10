@@ -33,7 +33,8 @@ WORKDIR /var/www/html
 COPY . /var/www/html
 
 # Install PHP dependencies via Composer
-RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist --ignore-platform-reqs
+RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist --no-scripts --ignore-platform-reqs
+
 
 
 # Set permissions (optional but recommended)
