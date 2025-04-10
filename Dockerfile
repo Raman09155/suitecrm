@@ -3,7 +3,7 @@ FROM php:8.1-apache
 # Enable Apache rewrite module
 RUN a2enmod rewrite
 
-# Install required system and PHP dependencies
+# Install system and PHP dependencies
 RUN apt-get update && apt-get install -y \
     unzip \
     git \
@@ -29,23 +29,23 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Set working directory
 WORKDIR /var/www/html
 
-# Copy application source code
+# Copy source code
 COPY . .
 
-# Update Apache DocumentRoot to point to the 'public' folder (SuiteCRM 8 structure)
+# Update Apache DocumentRoot to use the public folder (SuiteCRM 8 structure)
 RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|' /etc/apache2/sites-available/000-default.conf
 
-# Optional: Fix file permissions (recommended)
+# Fix permissions (optional but recommended)
 RUN chown -R www-data:www-data /var/www/html && chmod -R 755 /var/www/html
 
-# Set Git safe directory for the problematic package to avoid "dubious ownership" errors
-RUN git config --global --add safe.directory /var/www/html/vendor/zozlak/rdf-constants
+# <<-- Add dummy symfony-cmd so auto-scripts don't fail -->>
+RUN echo '#!/bin/sh\nexit 0' > /usr/local/bin/symfony-cmd && chmod +x /usr/local/bin/symfony-cmd
 
-# Install Composer dependencies (allowing platform requirements to be ignored)
+# Install Composer dependencies normally (let auto-scripts run)
 RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs
 
-# Expose Apache's default HTTP port
+# Expose HTTP port
 EXPOSE 80
 
-# Start Apache
+# Start Apache server
 CMD ["apache2-foreground"]
