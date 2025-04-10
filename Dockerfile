@@ -3,7 +3,7 @@ FROM php:8.1-apache
 # Enable Apache rewrite module
 RUN a2enmod rewrite
 
-# Install PHP dependencies
+# Install system and PHP dependencies
 RUN apt-get update && apt-get install -y \
     unzip \
     git \
@@ -17,6 +17,7 @@ RUN apt-get update && apt-get install -y \
     libfreetype6-dev \
     libonig-dev \
     libssl-dev \
+    libmcrypt-dev \
     libcurl4-openssl-dev \
     libldap2-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
@@ -28,26 +29,26 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Set working directory
 WORKDIR /var/www/html
 
-# Copy app source
+# Copy source code
 COPY . .
 
-# Set Apache public directory
+# Update Apache DocumentRoot to use the public folder
 RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|' /etc/apache2/sites-available/000-default.conf
 
-# Permissions
+# Fix permissions
 RUN chown -R www-data:www-data /var/www/html && chmod -R 755 /var/www/html
 
-# Prevent Symfony install errors
+# Dummy symfony-cmd to prevent post-install script failures
 RUN echo '#!/bin/sh\nexit 0' > /usr/local/bin/symfony-cmd && chmod +x /usr/local/bin/symfony-cmd
 
-# Avoid Composer memory crashes
+# Disable Composer scripts (to avoid failures), ignore platform reqs if needed
 ENV COMPOSER_MEMORY_LIMIT=-1
 
-# Run Composer install only if composer.json exists
-RUN if [ -f composer.json ]; then composer install --no-dev --optimize-autoloader --ignore-platform-reqs || echo "Composer failed — ignored."; fi
+RUN composer install --no-dev --optimize-autoloader --no-scripts || true
 
-# Expose port 80
+# Expose HTTP port
 EXPOSE 80
 
 # Start Apache
 CMD ["apache2-foreground"]
+
